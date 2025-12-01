@@ -116,7 +116,9 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authData.session?.access_token}` // Token do usuário logado
         },
-        body: JSON.stringify({}) // A function já sabe o priceId
+        body: JSON.stringify({
+          price_id: 'price_1S2h3JI6QbtlS9Wt7Wupjnco'
+        }) 
       });
 
       const checkoutData = await checkoutRes.json();
