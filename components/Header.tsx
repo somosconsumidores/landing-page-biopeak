@@ -4,9 +4,10 @@ import Button from './Button';
 
 interface HeaderProps {
   onNavigate: (page: 'home' | 'download') => void;
+  onOpenModal: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
+const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenModal }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -33,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
   return (
     <header className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-navy/80 backdrop-blur-md border-b border-white/5' : 'bg-transparent'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-32 md:h-40">
           <div 
             className="flex items-center cursor-pointer"
             onClick={() => onNavigate('home')}
@@ -41,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
             <img 
               src="https://grcwlmltlcltmwbhdpky.supabase.co/storage/v1/object/public/Geral/BioPeak%2010124%20White%20Icon.png" 
               alt="BioPeak" 
-              className="h-14 md:h-16 w-auto object-contain"
+              className="h-24 md:h-32 w-auto object-contain"
             />
           </div>
 
@@ -53,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
             <Button 
               variant="primary" 
               className="py-2 px-6 text-sm"
-              onClick={() => onNavigate('download')}
+              onClick={onOpenModal}
             >
               Baixar App
             </Button>
@@ -81,7 +82,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                 variant="primary"
                 onClick={() => {
                   setIsOpen(false);
-                  onNavigate('download');
+                  onOpenModal();
                 }}
               >
                 Baixar App

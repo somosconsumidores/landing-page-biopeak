@@ -29,7 +29,10 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-navy text-textMain flex flex-col scroll-smooth selection:bg-emerald selection:text-navy">
-      <Header onNavigate={handleNavigate} />
+      <Header 
+        onNavigate={handleNavigate} 
+        onOpenModal={() => openModal('free')} 
+      />
       
       <main className="flex-grow relative">
         {/* Global ambient glow */}
