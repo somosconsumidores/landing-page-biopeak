@@ -117,7 +117,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
           'Authorization': `Bearer ${authData.session?.access_token}` // Token do usuário logado
         },
         body: JSON.stringify({
-          price_id: 'price_1S2h3JI6QbtlS9Wt7Wupjnco'
+          price_id: 'price_1S85CZI6QbtlS9WtNAIvlP4h'
         }) 
       });
 
