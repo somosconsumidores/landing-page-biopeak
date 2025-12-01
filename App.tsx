@@ -25,8 +25,8 @@ const App: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'true') {
       setCurrentPage('success');
-      // Limpar a URL para ficar mais limpa, mas mantendo o estado
-      window.history.replaceState({}, document.title, window.location.pathname);
+      // Limpar a URL para ficar mais limpa (remove /paywall2 ou /success e params)
+      window.history.replaceState({}, document.title, "/");
     }
   }, []);
 
