@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-navy text-textMain font-sans;
+  }
+}
+
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+/* Aurora Glow Effect */
+.aurora-text {
+  background: linear-gradient(to right, #34d399, #2dd4bf, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Ensure images in ticker don't shrink */
+.animate-scroll img {
+  flex-shrink: 0;
+}
