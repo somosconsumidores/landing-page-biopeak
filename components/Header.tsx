@@ -3,7 +3,7 @@ import { Menu, X } from 'lucide-react';
 import Button from './Button';
 
 interface HeaderProps {
-  onNavigate: (page: 'home' | 'download') => void;
+  onNavigate: (page: 'home' | 'download' | 'success') => void;
   onOpenModal: () => void;
 }
 

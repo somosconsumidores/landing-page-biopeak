@@ -3,7 +3,7 @@ import Button from './Button';
 import { ChevronRight, Star, TrendingUp, Download } from 'lucide-react';
 
 interface HeroProps {
-  onNavigate?: (page: 'home' | 'download') => void;
+  onNavigate?: (page: 'home' | 'download' | 'success') => void;
   onOpenModal?: () => void;
 }
 

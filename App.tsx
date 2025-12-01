@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -10,14 +10,27 @@ import Pricing from './components/Pricing';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import DownloadPage from './components/DownloadPage';
+import SuccessPage from './components/SuccessPage';
 import CheckoutModal from './components/CheckoutModal';
 
+type PageRoute = 'home' | 'download' | 'success';
+
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<'home' | 'download'>('home');
+  const [currentPage, setCurrentPage] = useState<PageRoute>('home');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalFlow, setModalFlow] = useState<'free' | 'pro'>('pro');
 
-  const handleNavigate = (page: 'home' | 'download') => {
+  // Detectar retorno do Stripe (URL params)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === 'true') {
+      setCurrentPage('success');
+      // Limpar a URL para ficar mais limpa, mas mantendo o estado
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  const handleNavigate = (page: PageRoute) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -38,7 +51,7 @@ const App: React.FC = () => {
         {/* Global ambient glow */}
         <div className="fixed top-0 left-0 w-full h-screen bg-dark-gradient -z-50 opacity-50 pointer-events-none"></div>
         
-        {currentPage === 'home' ? (
+        {currentPage === 'home' && (
           <>
             <Hero onNavigate={handleNavigate} onOpenModal={() => openModal('free')} />
             <Features />
@@ -49,8 +62,14 @@ const App: React.FC = () => {
             <Pricing onOpenModal={() => openModal('pro')} />
             <FAQ />
           </>
-        ) : (
+        )}
+
+        {currentPage === 'download' && (
           <DownloadPage onNavigate={handleNavigate} />
+        )}
+
+        {currentPage === 'success' && (
+          <SuccessPage onNavigate={handleNavigate} />
         )}
       </main>
       

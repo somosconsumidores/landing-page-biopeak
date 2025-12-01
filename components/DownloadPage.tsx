@@ -3,7 +3,7 @@ import { CheckCircle2, Smartphone, Shield, Zap, ArrowLeft } from 'lucide-react';
 import Button from './Button';
 
 interface DownloadPageProps {
-  onNavigate: (page: 'home' | 'download') => void;
+  onNavigate: (page: 'home' | 'download' | 'success') => void;
 }
 
 const DownloadPage: React.FC<DownloadPageProps> = ({ onNavigate }) => {
