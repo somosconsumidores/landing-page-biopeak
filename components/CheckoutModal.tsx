@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Lock, CreditCard, CheckCircle2, Loader2, AlertCircle, User, Mail, Key, ArrowRight, ArrowLeft, Phone, Download } from 'lucide-react';
+import { X, Loader2, AlertCircle, User, Mail, Key, ArrowRight, CheckCircle2, Phone, Zap } from 'lucide-react';
 import Button from './Button';
+import { createClient } from '@supabase/supabase-js';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -13,19 +14,22 @@ interface CheckoutModalProps {
 const SUPABASE_URL = "https://grcwlmltlcltmwbhdpky.supabase.co"; 
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyY3dsbWx0bGNsdG13YmhkcGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIxNjQ1NjksImV4cCI6MjA2Nzc0MDU2OX0.vz_wCV_SEfsvWG7cSW3oJHMs-32x_XQF5hAYBY-m8sM";
 
+// Inicializar cliente Supabase para Auth
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPrice, flow = 'pro' }) => {
-  // Steps: signup -> payment (only pro) -> processing -> success -> download (only free)
-  const [step, setStep] = useState<'signup' | 'payment' | 'processing' | 'success' | 'download'>('signup');
+  // Steps: signup -> processing (redirecting) -> download (only free)
+  const [step, setStep] = useState<'signup' | 'processing' | 'download'>('signup');
   const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // Form Data
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [userId, setUserId] = useState<string | null>(null);
 
   // Handle animation mounting
   useEffect(() => {
@@ -40,21 +44,20 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
 
   if (!isOpen && !mounted) return null;
 
-  // PASSO 1: CRIAR USUÁRIO
-  const handleSignup = async (e: React.FormEvent) => {
+  // LÓGICA PRINCIPAL: CRIAR CONTA E DIRECIONAR
+  const handleSignupAndCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setLoadingMessage('Criando sua conta...');
 
     try {
       // 1. Validar e Formatar Telefone (E.164)
-      let formattedPhone = phone.replace(/\D/g, ''); // Remove tudo que não é número
-      if (!formattedPhone) {
-        throw new Error("Por favor, insira um telefone válido.");
-      }
-      // Se não começar com +, adicionar código do país (assumindo BR +55 se faltar)
+      let formattedPhone = phone.replace(/\D/g, ''); 
+      if (!formattedPhone) throw new Error("Por favor, insira um telefone válido.");
+      
       if (!phone.includes('+')) {
-         if (formattedPhone.length <= 11) { // Ex: 11999999999
+         if (formattedPhone.length <= 11) { 
             formattedPhone = `+55${formattedPhone}`;
          } else {
             formattedPhone = `+${formattedPhone}`;
@@ -63,9 +66,8 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
          formattedPhone = `+${formattedPhone}`;
       }
 
-      console.log("Criando usuário em:", `${SUPABASE_URL}/functions/v1/create-user`);
-
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
+      // 2. Chamada para Criar Usuário (Edge Function)
+      const createUserRes = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -75,63 +77,67 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
           email: email,
           password: password,
           name: name,
-          phone: formattedPhone, // Auth Phone
-          data: { // Metadata no padrão do cliente JS
-            display_name: name,
-            phone: formattedPhone
-          },
-          metadata: { // Metadata redundante para function
-            display_name: name,
-            phone: formattedPhone
-          }
+          phone: formattedPhone, 
+          data: { display_name: name, phone: formattedPhone },
+          metadata: { display_name: name, phone: formattedPhone }
         })
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || data.message || "Falha ao criar conta. Verifique os dados.");
+      const userData = await createUserRes.json();
+      if (!createUserRes.ok) {
+        throw new Error(userData.error || userData.message || "Erro ao criar conta.");
       }
 
-      // Sucesso na criação
-      console.log("Usuário criado com sucesso:", data);
-      setUserId(data.id || data.user?.id);
-
-      // LÓGICA DE FLUXO
+      // SE FOR FLUXO GRATUITO: ACABOU AQUI
       if (flow === 'free') {
-        setStep('download'); // Pula pagamento
+        setIsLoading(false);
+        setStep('download');
+        return;
+      }
+
+      // SE FOR FLUXO PRO: INICIAR CHECKOUT
+      setLoadingMessage('Iniciando sessão segura...');
+      setStep('processing');
+
+      // 3. Fazer Login para pegar Token (Necessário para o Checkout)
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (authError) throw new Error("Erro ao autenticar para pagamento.");
+
+      setLoadingMessage('Gerando link de pagamento...');
+
+      // 4. Chamar Edge Function para criar Sessão do Stripe
+      const checkoutRes = await fetch(`${SUPABASE_URL}/functions/v1/create-flash-checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authData.session?.access_token}` // Token do usuário logado
+        },
+        body: JSON.stringify({}) // A function já sabe o priceId
+      });
+
+      const checkoutData = await checkoutRes.json();
+      
+      if (!checkoutRes.ok) {
+        throw new Error(checkoutData.error || "Erro ao gerar checkout.");
+      }
+
+      if (checkoutData.url) {
+        setLoadingMessage('Redirecionando para o Stripe...');
+        // 5. Redirecionar usuário para o Stripe
+        window.location.href = checkoutData.url;
       } else {
-        setStep('payment'); // Vai para pagamento
+        throw new Error("URL de pagamento não retornada.");
       }
 
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Erro ao criar conta.");
-    } finally {
+      setStep('signup'); // Voltar para o form em caso de erro
+      setError(err.message || "Ocorreu um erro inesperado.");
       setIsLoading(false);
-    }
-  };
-
-  // PASSO 2: PAGAMENTO
-  const handlePayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStep('processing');
-    setError(null);
-    
-    try {
-      // Simulação de pagamento Pro
-      console.log("Processando pagamento para:", email);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      if (Math.random() > 0.05) { 
-        setStep('success');
-      } else {
-        throw new Error("O cartão foi recusado pelo banco emissor.");
-      }
-
-    } catch (err: any) {
-      setStep('payment');
-      setError(err.message || "Ocorreu um erro no processamento.");
     }
   };
 
@@ -141,10 +147,10 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
   };
 
   const renderStepTitle = () => {
-    if (step === 'signup') return 'Passo 1: Criar Conta';
-    if (step === 'payment' || step === 'processing') return 'Passo 2: Assinatura Pro';
+    if (step === 'signup') return flow === 'free' ? 'Criar Conta' : 'Passo 1: Cadastro';
+    if (step === 'processing') return 'Processando...';
     if (step === 'download') return 'Download Gratuito';
-    return 'Concluído';
+    return 'BioPeak';
   }
 
   return (
@@ -159,10 +165,9 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
       {/* Modal Container */}
       <div className={`relative bg-surface w-full max-w-md rounded-2xl border border-white/10 shadow-2xl overflow-hidden transition-all duration-300 transform ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}>
         
-        {/* Header with Progress */}
+        {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-white/5 bg-navy/50">
           <div className="flex items-center gap-2">
-             {(step === 'signup' || step === 'payment') && <div className="h-2 w-2 rounded-full bg-emerald animate-pulse"></div>}
              <span className="text-sm font-bold text-white uppercase tracking-wider">
                {renderStepTitle()}
              </span>
@@ -182,15 +187,15 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
             </div>
           )}
 
-          {/* STEP 1: SIGN UP FORM */}
+          {/* FORMULÁRIO DE CADASTRO */}
           {step === 'signup' && (
-            <form onSubmit={handleSignup} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <form onSubmit={handleSignupAndCheckout} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center mb-6">
                  <h3 className="text-xl font-bold text-white">
-                   {flow === 'free' ? 'Criar Conta Gratuita' : 'Comece sua Jornada'}
+                   {flow === 'free' ? 'Criar Conta Gratuita' : 'Comece sua Evolução'}
                  </h3>
                  <p className="text-gray-400 text-sm mt-1">
-                   {flow === 'free' ? 'Cadastre-se para baixar o app e começar a treinar.' : 'Crie sua conta BioPeak para acessar o Plano Pro.'}
+                   {flow === 'free' ? 'Preencha para baixar o app.' : 'Crie sua conta para prosseguir ao pagamento seguro.'}
                  </p>
               </div>
 
@@ -267,7 +272,21 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
             </form>
           )}
 
-          {/* STEP: DOWNLOAD (FREE FLOW) */}
+          {/* TELA DE PROCESSAMENTO (LOADING / REDIRECT) */}
+          {step === 'processing' && (
+            <div className="py-12 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-300">
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-emerald/20 blur-xl rounded-full animate-pulse"></div>
+                <Loader2 size={64} className="text-emerald animate-spin relative z-10" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">{loadingMessage}</h3>
+              <p className="text-gray-400 max-w-xs text-sm">
+                Estamos preparando seu checkout seguro. Você será redirecionado para o Stripe em instantes.
+              </p>
+            </div>
+          )}
+
+          {/* TELA DE DOWNLOAD (APENAS FLUXO FREE) */}
           {step === 'download' && (
             <div className="text-center animate-in fade-in slide-in-from-right-8 duration-300">
               <div className="w-16 h-16 bg-emerald/20 rounded-full flex items-center justify-center text-emerald mx-auto mb-6 shadow-[0_0_15px_rgba(52,211,153,0.3)]">
@@ -303,106 +322,6 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
                     <span>Baixar no Google Play</span>
                  </a>
               </div>
-            </div>
-          )}
-
-          {/* STEP 2: PAYMENT FORM (PRO ONLY) */}
-          {step === 'payment' && (
-            <form onSubmit={handlePayment} className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-300">
-              
-              <button 
-                type="button" 
-                onClick={() => setStep('signup')}
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-white transition-colors mb-2"
-              >
-                <ArrowLeft size={12} /> Voltar e editar dados
-              </button>
-
-              {/* Order Summary */}
-              <div className="flex justify-between items-baseline mb-6 pb-6 border-b border-white/5 bg-white/5 p-4 rounded-xl">
-                <div>
-                  <h3 className="text-white font-bold text-lg">BioPeak Pro</h3>
-                  <p className="text-emerald text-sm font-medium">{email}</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-2xl font-bold text-white">R$ {planPrice}</span>
-                  <span className="text-gray-500 text-sm">/mês</span>
-                </div>
-              </div>
-
-              {/* Fake Stripe Elements Container */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Cartão de Crédito</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-500 group-focus-within:text-emerald transition-colors">
-                      <CreditCard size={18} />
-                    </div>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="0000 0000 0000 0000"
-                      className="w-full bg-navy border border-white/10 rounded-t-lg px-4 py-3 pl-12 text-white placeholder-gray-600 focus:outline-none focus:border-emerald focus:ring-1 focus:ring-emerald transition-all z-10 relative"
-                    />
-                    <div className="flex -mt-[1px]">
-                      <input 
-                        type="text" 
-                        required
-                        placeholder="MM / AA"
-                        className="w-1/2 bg-navy border border-white/10 rounded-bl-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-emerald focus:ring-1 focus:ring-emerald transition-all"
-                      />
-                      <input 
-                        type="text" 
-                        required
-                        placeholder="CVC"
-                        className="w-1/2 bg-navy border border-white/10 border-l-0 rounded-br-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-emerald focus:ring-1 focus:ring-emerald transition-all"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Titular do Cartão</label>
-                  <input 
-                    type="text" 
-                    required
-                    placeholder="Nome impresso no cartão"
-                    className="w-full bg-navy border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-emerald focus:ring-1 focus:ring-emerald transition-all"
-                  />
-                </div>
-              </div>
-
-              <Button type="submit" fullWidth className="py-4 mt-4 text-lg shadow-lg shadow-emerald/20">
-                Finalizar Assinatura
-              </Button>
-              
-              <div className="flex items-center justify-center gap-2 text-xs text-gray-500 mt-4">
-                <Lock size={12} />
-                <span>Ambiente Seguro (256-bit SSL)</span>
-              </div>
-            </form>
-          )}
-
-          {step === 'processing' && (
-            <div className="py-12 flex flex-col items-center justify-center text-center">
-              <Loader2 size={48} className="text-emerald animate-spin mb-6" />
-              <h3 className="text-xl font-bold text-white mb-2">Processando Pagamento...</h3>
-              <p className="text-gray-400">Não feche esta janela.</p>
-            </div>
-          )}
-
-          {step === 'success' && (
-            <div className="py-8 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-300">
-              <div className="w-20 h-20 bg-emerald/20 rounded-full flex items-center justify-center text-emerald mb-6 shadow-[0_0_20px_rgba(52,211,153,0.3)]">
-                <CheckCircle2 size={40} strokeWidth={3} />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Bem-vindo ao Time!</h3>
-              <p className="text-gray-400 mb-8 max-w-xs">
-                Sua conta foi criada e a assinatura confirmada. Baixe o app e faça login com <strong>{email}</strong>.
-              </p>
-              <Button onClick={handleClose} fullWidth variant="outline">
-                Fechar
-              </Button>
             </div>
           )}
 
