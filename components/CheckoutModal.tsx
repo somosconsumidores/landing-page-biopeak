@@ -8,6 +8,7 @@ interface CheckoutModalProps {
   onClose: () => void;
   planPrice: string;
   flow?: 'free' | 'pro';
+  utmSource?: string | null;
 }
 
 // CONFIGURAÇÃO DE AMBIENTE
@@ -17,7 +18,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Inicializar cliente Supabase para Auth
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPrice, flow = 'pro' }) => {
+const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPrice, flow = 'pro', utmSource }) => {
   // Steps: signup -> processing (redirecting) -> download (only free)
   const [step, setStep] = useState<'signup' | 'processing' | 'download'>('signup');
   const [mounted, setMounted] = useState(false);
@@ -67,6 +68,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
       }
 
       // 2. Chamada para Criar Usuário (Edge Function)
+      // Enviamos o utmSource tanto em 'data' quanto em 'metadata' para garantir
       const createUserRes = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
         method: 'POST',
         headers: {
@@ -78,8 +80,16 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
           password: password,
           name: name,
           phone: formattedPhone, 
-          data: { display_name: name, phone: formattedPhone },
-          metadata: { display_name: name, phone: formattedPhone }
+          data: { 
+            display_name: name, 
+            phone: formattedPhone,
+            utm_source: utmSource || 'direct'
+          },
+          metadata: { 
+            display_name: name, 
+            phone: formattedPhone,
+            utm_source: utmSource || 'direct'
+          }
         })
       });
 

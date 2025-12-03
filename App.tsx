@@ -19,10 +19,19 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageRoute>('home');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalFlow, setModalFlow] = useState<'free' | 'pro'>('pro');
+  const [utmSource, setUtmSource] = useState<string | null>(null);
 
-  // Detectar retorno do Stripe (URL params)
+  // Detectar retorno do Stripe e UTM Source
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    
+    // Capturar UTM Source
+    const source = params.get('utm_source');
+    if (source) {
+      setUtmSource(source);
+    }
+
+    // Detectar Sucesso do Pagamento
     if (params.get('success') === 'true') {
       setCurrentPage('success');
       // Limpar a URL para ficar mais limpa (remove /paywall2 ou /success e params)
@@ -80,6 +89,7 @@ const App: React.FC = () => {
         onClose={() => setIsModalOpen(false)} 
         planPrice="12,90"
         flow={modalFlow}
+        utmSource={utmSource}
       />
     </div>
   );
