@@ -50,6 +50,29 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+
+    // VALIDAÇÃO ESTRITA DOS CAMPOS OBRIGATÓRIOS
+    if (!name.trim()) {
+      setError("O campo Nome é obrigatório.");
+      setIsLoading(false);
+      return;
+    }
+    if (!email.trim()) {
+      setError("O campo Email é obrigatório.");
+      setIsLoading(false);
+      return;
+    }
+    if (!phone.trim()) {
+      setError("O campo Celular é obrigatório.");
+      setIsLoading(false);
+      return;
+    }
+    if (!password || password.length < 6) {
+      setError("A senha é obrigatória e deve ter no mínimo 6 caracteres.");
+      setIsLoading(false);
+      return;
+    }
+
     setLoadingMessage('Criando sua conta...');
 
     try {
@@ -212,7 +235,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Nome Completo</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Nome Completo <span className="text-red-500">*</span></label>
                 <div className="relative group">
                   <User size={18} className="absolute left-3 top-3 text-gray-500 group-focus-within:text-emerald transition-colors" />
                   <input 
@@ -227,7 +250,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Email</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Email <span className="text-red-500">*</span></label>
                 <div className="relative group">
                   <Mail size={18} className="absolute left-3 top-3 text-gray-500 group-focus-within:text-emerald transition-colors" />
                   <input 
@@ -242,7 +265,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Celular</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Celular <span className="text-red-500">*</span></label>
                 <div className="relative group">
                   <Phone size={18} className="absolute left-3 top-3 text-gray-500 group-focus-within:text-emerald transition-colors" />
                   <input 
@@ -257,7 +280,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Senha</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Senha <span className="text-red-500">*</span></label>
                 <div className="relative group">
                   <Key size={18} className="absolute left-3 top-3 text-gray-500 group-focus-within:text-emerald transition-colors" />
                   <input 
