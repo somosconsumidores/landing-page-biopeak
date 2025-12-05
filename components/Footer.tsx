@@ -10,9 +10,20 @@ const Footer: React.FC = () => {
         {/* Main Footer CTA */}
         <div className="text-center mb-20 border-b border-white/5 pb-20">
           <h2 className="text-4xl font-bold mb-6">Pronto para sua melhor versão?</h2>
-          <p className="text-gray-400 max-w-2xl mx-auto mb-8 text-lg">
+          <p className="text-gray-400 max-w-2xl mx-auto mb-10 text-lg">
             Junte-se ao BioPeak hoje e transforme seus dados em performance real.
           </p>
+          
+          {/* Hero Image Insertion */}
+          <div className="relative max-w-4xl mx-auto mb-12 group">
+             <div className="absolute -inset-1 bg-gradient-to-r from-emerald/20 to-purpleAurora/20 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+             <img 
+               src="https://grcwlmltlcltmwbhdpky.supabase.co/storage/v1/object/public/Geral/HeroSection2.png" 
+               alt="BioPeak Dashboard Preview" 
+               className="relative rounded-2xl border border-white/10 shadow-2xl w-full h-auto object-cover"
+             />
+          </div>
+
           <Button variant="primary" className="px-10 py-4 text-lg">
             Começar Gratuitamente
           </Button>
