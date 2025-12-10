@@ -28,6 +28,7 @@ const Comparison: React.FC = () => {
                 { name: "Preço Mensal", bio: "R$ 12,90", strava: "R$ 22,90", garmin: "Grátis (requer relógio R$2k+)" },
                 { name: "Coach de IA", bio: true, strava: false, garmin: false },
                 { name: "Planos Adaptativos", bio: true, strava: "limitado", garmin: "básico" },
+                { name: "Plano Nutricional", bio: true, strava: false, garmin: false },
                 { name: "Funciona sem Relógio", bio: true, strava: true, garmin: false },
                 { name: "Análise de Fadiga", bio: true, strava: false, garmin: "básico" },
                 { name: "Fitness Score", bio: true, strava: false, garmin: true },

@@ -11,6 +11,7 @@ const Pricing: React.FC<PricingProps> = ({ onOpenModal }) => {
 
   const benefits = [
     "Planos de treino adaptativos (IA)",
+    "Plano Nutricional com base em seu Plano de Treino",
     "Coach de IA ilimitado (chat)",
     "Rastreamento GPS e áudio",
     "Fitness Score e Análise de Fadiga",
