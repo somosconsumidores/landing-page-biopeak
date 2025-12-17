@@ -22,7 +22,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenModal }) => {
         <div className="lg:grid lg:grid-cols-12 lg:gap-16 items-center">
           
           {/* Left Content */}
-          <div className="lg:col-span-6 text-center lg:text-left mb-12 lg:mb-0 z-10 relative">
+          <div className="lg:col-span-5 text-center lg:text-left mb-12 lg:mb-0 z-10 relative">
             <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-emerald px-4 py-2 rounded-full text-sm font-semibold mb-6 backdrop-blur-sm">
               <Star size={16} fill="currentColor" />
               <span>O Personal Coach no seu bolso</span>
@@ -68,36 +68,35 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenModal }) => {
             </div>
           </div>
 
-          {/* Right Content - Mockup */}
-          <div className="lg:col-span-6 relative">
-            <div className="relative mx-auto w-[280px] sm:w-[320px] lg:w-[340px]">
+          {/* Right Content - Mockup (Increased by ~50%) */}
+          <div className="lg:col-span-7 relative">
+            <div className="relative mx-auto w-full max-w-[420px] sm:max-w-[480px] lg:max-w-[510px]">
               {/* Decorative Circle */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-emerald/20 to-purpleAurora/20 rounded-full blur-3xl -z-10 animate-pulse"></div>
               
               {/* Image Container - Clean Screen Style */}
-              <div className="rounded-[2.5rem] overflow-hidden shadow-2xl relative border border-white/10 bg-navy">
+              <div className="rounded-[3rem] overflow-hidden shadow-2xl relative border border-white/10 bg-navy">
                   <img 
                     src="https://grcwlmltlcltmwbhdpky.supabase.co/storage/v1/object/public/app-screenshots/11.png" 
                     alt="BioPeak App Interface" 
                     className="w-full h-auto object-cover"
                   />
               </div>
-            </div>
-            
-            {/* Floating Card */}
-            <div className="absolute bottom-10 -left-4 lg:-left-12 bg-surface/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-white/10 max-w-[200px] animate-bounce duration-[3000ms]">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-emerald/20 rounded-full flex items-center justify-center text-emerald">
-                  <TrendingUp size={20} />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400">Fitness Score</p>
-                  <p className="font-bold text-white text-lg">+1.37 pts</p>
-                </div>
-              </div>
-              <p className="text-xs text-emerald font-medium">Você está evoluindo!</p>
-            </div>
 
+              {/* Floating Card - Adjusted position for larger image */}
+              <div className="absolute bottom-10 -left-6 lg:-left-16 bg-surface/90 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-white/10 max-w-[220px] animate-bounce duration-[3000ms] z-20">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-emerald/20 rounded-full flex items-center justify-center text-emerald">
+                    <TrendingUp size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Fitness Score</p>
+                    <p className="font-bold text-white text-xl">+1.37 pts</p>
+                  </div>
+                </div>
+                <p className="text-xs text-emerald font-medium">Você está evoluindo!</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
