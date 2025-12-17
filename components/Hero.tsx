@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Button from './Button';
 import { ChevronRight, Star, TrendingUp, Download } from 'lucide-react';
@@ -76,7 +77,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenModal }) => {
               {/* Image Container - Clean Screen Style */}
               <div className="rounded-[2.5rem] overflow-hidden shadow-2xl relative border border-white/10 bg-navy">
                   <img 
-                    src="https://grcwlmltlcltmwbhdpky.supabase.co/storage/v1/object/public/app-screenshots/1.png" 
+                    src="https://grcwlmltlcltmwbhdpky.supabase.co/storage/v1/object/public/app-screenshots/11.png" 
                     alt="BioPeak App Interface" 
                     className="w-full h-auto object-cover"
                   />
