@@ -21,7 +21,6 @@ const App: React.FC = () => {
   const [modalFlow, setModalFlow] = useState<'free' | 'pro'>('pro');
   const [utmSource, setUtmSource] = useState<string | null>(null);
 
-  // Detectar retorno do Stripe e UTM Source
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     
@@ -31,11 +30,11 @@ const App: React.FC = () => {
       setUtmSource(source);
     }
 
-    // Detectar Sucesso do Pagamento
+    // Detectar Sucesso do Pagamento (Independente do path /paywall2)
     if (params.get('success') === 'true') {
       setCurrentPage('success');
-      // Limpar a URL para ficar mais limpa (remove /paywall2 ou /success e params)
-      window.history.replaceState({}, document.title, "/");
+      // Limpa a URL para o usuário, mas mantém na memória que é sucesso
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
 
@@ -57,7 +56,6 @@ const App: React.FC = () => {
       />
       
       <main className="flex-grow relative">
-        {/* Global ambient glow */}
         <div className="fixed top-0 left-0 w-full h-screen bg-dark-gradient -z-50 opacity-50 pointer-events-none"></div>
         
         {currentPage === 'home' && (
