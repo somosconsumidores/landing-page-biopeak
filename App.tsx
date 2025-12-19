@@ -22,20 +22,29 @@ const App: React.FC = () => {
   const [utmSource, setUtmSource] = useState<string | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    
-    // Capturar UTM Source
-    const source = params.get('utm_source');
-    if (source) {
-      setUtmSource(source);
-    }
+    // Função para verificar parâmetros da URL
+    const checkStatus = () => {
+      const params = new URLSearchParams(window.location.search);
+      
+      // Capturar UTM Source
+      const source = params.get('utm_source');
+      if (source) {
+        setUtmSource(source);
+      }
 
-    // Detectar Sucesso do Pagamento (Independente do path /paywall2)
-    if (params.get('success') === 'true') {
-      setCurrentPage('success');
-      // Limpa a URL para o usuário, mas mantém na memória que é sucesso
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
+      // Detectar Sucesso do Pagamento
+      if (params.get('success') === 'true') {
+        setCurrentPage('success');
+        // Limpa os parâmetros da URL sem recarregar a página para uma experiência limpa
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    };
+
+    checkStatus();
+    // Listener para mudanças de histórico (caso o usuário use botões de voltar/avançar)
+    window.addEventListener('popstate', checkStatus);
+    return () => window.removeEventListener('popstate', checkStatus);
   }, []);
 
   const handleNavigate = (page: PageRoute) => {
