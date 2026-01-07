@@ -1,6 +1,6 @@
 import React from 'react';
 import Button from './Button';
-import { Star, TrendingUp, Download } from 'lucide-react';
+import { Star, TrendingUp, ArrowRight } from 'lucide-react';
 
 interface HeroProps {
   onNavigate?: (page: 'home' | 'download' | 'success') => void;
@@ -34,8 +34,8 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenModal }) => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button variant="primary" onClick={onOpenModal}>
-                Download Gratuito
-                <Download className="ml-2 w-5 h-5" />
+                Começar Agora
+                <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               <Button 
                 variant="secondary" 

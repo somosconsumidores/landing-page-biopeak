@@ -61,7 +61,7 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-navy text-textMain flex flex-col scroll-smooth selection:bg-emerald selection:text-navy">
       <Header 
         onNavigate={handleNavigate} 
-        onOpenModal={() => openModal('free')} 
+        onOpenModal={() => openModal('pro')} 
       />
       
       <main className="flex-grow relative">
@@ -69,7 +69,7 @@ const App: React.FC = () => {
         
         {currentPage === 'home' && (
           <>
-            <Hero onNavigate={handleNavigate} onOpenModal={() => openModal('free')} />
+            <Hero onNavigate={handleNavigate} onOpenModal={() => openModal('pro')} />
             <Features />
             <HowItWorks />
             <AppShowcase />
