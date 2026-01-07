@@ -2,7 +2,11 @@ import React from 'react';
 import { TrendingUp, Instagram, Twitter, Facebook } from 'lucide-react';
 import Button from './Button';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  onOpenModal: () => void;
+}
+
+const Footer: React.FC<FooterProps> = ({ onOpenModal }) => {
   return (
     <footer className="bg-[#000205] text-white pt-20 pb-10 border-t border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -24,7 +28,7 @@ const Footer: React.FC = () => {
              />
           </div>
 
-          <Button variant="primary" className="px-10 py-4 text-lg">
+          <Button variant="primary" className="px-10 py-4 text-lg" onClick={onOpenModal}>
             Começar Gratuitamente
           </Button>
         </div>
@@ -46,10 +50,10 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="font-bold mb-4 text-white">Produto</h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li><a href="#" className="hover:text-emerald transition-colors">Funcionalidades</a></li>
-              <li><a href="#" className="hover:text-emerald transition-colors">Planos de Treino</a></li>
-              <li><a href="#" className="hover:text-emerald transition-colors">Integrações</a></li>
-              <li><a href="#" className="hover:text-emerald transition-colors">Preços</a></li>
+              <li><button onClick={(e) => { e.preventDefault(); const el = document.getElementById('funcionalidades'); if(el) el.scrollIntoView({behavior:'smooth'}); }} className="hover:text-emerald transition-colors text-left">Funcionalidades</button></li>
+              <li><button onClick={(e) => { e.preventDefault(); const el = document.getElementById('como-funciona'); if(el) el.scrollIntoView({behavior:'smooth'}); }} className="hover:text-emerald transition-colors text-left">Planos de Treino</button></li>
+              <li><button onClick={(e) => { e.preventDefault(); onOpenModal(); }} className="hover:text-emerald transition-colors text-left">Download do App</button></li>
+              <li><button onClick={(e) => { e.preventDefault(); const el = document.getElementById('precos'); if(el) el.scrollIntoView({behavior:'smooth'}); }} className="hover:text-emerald transition-colors text-left">Preços</button></li>
             </ul>
           </div>
 

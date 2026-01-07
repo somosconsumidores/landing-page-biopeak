@@ -89,7 +89,7 @@ const App: React.FC = () => {
         )}
       </main>
       
-      {currentPage === 'home' && <Footer />}
+      {currentPage === 'home' && <Footer onOpenModal={() => openModal('free')} />}
 
       <CheckoutModal 
         isOpen={isModalOpen} 
