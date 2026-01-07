@@ -29,7 +29,7 @@ const Footer: React.FC<FooterProps> = ({ onOpenModal }) => {
           </div>
 
           <Button variant="primary" className="px-10 py-4 text-lg" onClick={onOpenModal}>
-            Começar Gratuitamente
+            Começar Agora
           </Button>
         </div>
 

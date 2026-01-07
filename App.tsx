@@ -22,9 +22,10 @@ const App: React.FC = () => {
   const [utmSource, setUtmSource] = useState<string | null>(null);
 
   useEffect(() => {
-    // Função para verificar parâmetros da URL
+    // Função para verificar parâmetros da URL e o Pathname
     const checkStatus = () => {
       const params = new URLSearchParams(window.location.search);
+      const path = window.location.pathname;
       
       // Capturar UTM Source
       const source = params.get('utm_source');
@@ -32,17 +33,20 @@ const App: React.FC = () => {
         setUtmSource(source);
       }
 
-      // Detectar Sucesso do Pagamento
-      if (params.get('success') === 'true') {
+      // Detectar Sucesso do Pagamento (independente de estar na / ou /paywall2)
+      if (params.get('success') === 'true' || path.includes('paywall2')) {
         setCurrentPage('success');
-        // Limpa os parâmetros da URL sem recarregar a página para uma experiência limpa
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
+        
+        // Limpa a URL para o estado base (removendo o /paywall2 e os query params)
+        // Isso evita que o usuário caia no erro de "página não encontrada" ao dar refresh
+        if (window.location.pathname !== '/' || window.location.search !== '') {
+          window.history.replaceState({}, document.title, '/');
+        }
       }
     };
 
     checkStatus();
-    // Listener para mudanças de histórico (caso o usuário use botões de voltar/avançar)
+    // Listener para mudanças de histórico
     window.addEventListener('popstate', checkStatus);
     return () => window.removeEventListener('popstate', checkStatus);
   }, []);
