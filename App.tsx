@@ -31,12 +31,13 @@ const App: React.FC = () => {
         setUtmSource(source);
       }
 
-      // Detecção de Sucesso: verifica o parâmetro ?success=true OU se o caminho é /paywall2
-      if (params.get('success') === 'true' || path.includes('/paywall2')) {
+      // Detecção de Sucesso do Stripe
+      // Captura tanto o parâmetro de sucesso quanto a URL específica de retorno configurada no Stripe (/paywall2)
+      if (params.get('success') === 'true' || path === '/paywall2' || path.includes('/paywall2')) {
         setCurrentPage('success');
         
-        // Limpa a URL para a raiz para evitar loops ou erros 404 em refresh futuro
-        // mas mantém a 'success page' ativa no estado do React
+        // Limpa a URL visualmente para o usuário para manter a estética da landing page
+        // mas mantém o estado 'success' no React
         if (path !== '/' || params.toString() !== '') {
           window.history.replaceState({}, document.title, '/');
         }
@@ -44,7 +45,7 @@ const App: React.FC = () => {
     };
 
     checkStatus();
-    // Escutar mudanças de navegação manual do usuário
+    // Escuta eventos de navegação do browser (voltar/avançar)
     window.addEventListener('popstate', checkStatus);
     return () => window.removeEventListener('popstate', checkStatus);
   }, []);
