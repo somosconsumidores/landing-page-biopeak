@@ -80,7 +80,7 @@ const SuccessPage: React.FC<SuccessPageProps> = ({ onNavigate }) => {
 
         {/* Footer actions */}
         <div className="flex flex-col items-center justify-center gap-6">
-          <p className="text-gray-500 text-sm">Problemas com o acesso? Entre em contato com suporte@biopeak-ai.com</p>
+          <p className="text-gray-500 text-sm">Problemas com o acesso? Entre em contato com relacionamento@biopeak-ai.com</p>
           <button 
             onClick={() => onNavigate('home')}
             className="text-gray-400 hover:text-emerald transition-colors flex items-center gap-2 text-sm font-medium underline underline-offset-4"
