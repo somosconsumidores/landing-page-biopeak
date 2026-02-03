@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 // Added missing Smartphone import from lucide-react
 import { X, Loader2, AlertCircle, User, Mail, Key, ArrowRight, CheckCircle2, Phone, Zap, Smartphone } from 'lucide-react';
 import Button from './Button';
-import { createClient } from '@supabase/supabase-js';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -53,7 +52,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
       return;
     }
 
-    setLoadingMessage('Criando sua conta...');
+    setLoadingMessage('Preparando sua conta...');
 
     try {
       // 1. Formatar Telefone (E.164)
@@ -92,25 +91,35 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
       });
 
       const userData = await createUserRes.json();
-      if (!createUserRes.ok) {
+      
+      // Lógica para detectar se o usuário já existe
+      const errorMessage = (userData.error || userData.message || "").toLowerCase();
+      const userAlreadyExists = !createUserRes.ok && (
+        errorMessage.includes('already registered') || 
+        errorMessage.includes('already been registered') ||
+        errorMessage.includes('user_already_exists')
+      );
+
+      // Se não estiver OK e não for erro de "usuário já existe", joga o erro
+      if (!createUserRes.ok && !userAlreadyExists) {
         throw new Error(userData.error || userData.message || "Erro ao criar conta.");
       }
 
-      // FLUXO GRATUITO
+      // FLUXO GRATUITO: Vai para download (mesmo se já existir)
       if (flow === 'free') {
         setIsLoading(false);
         setStep('download');
         return;
       }
 
-      // FLUXO PRO: REDIRECIONAMENTO DIRETO PARA O STRIPE COM EMAIL PREENCHIDO
+      // FLUXO PRO: REDIRECIONAMENTO DIRETO PARA O STRIPE
       setLoadingMessage('Redirecionando para o pagamento seguro...');
       setStep('processing');
 
       // Construir a URL de checkout com o email preenchido
       const stripeCheckoutUrl = `https://buy.stripe.com/6oU14ncIr7ML6q8dK20RG02?prefilled_email=${encodeURIComponent(email.trim())}`;
       
-      // Pequeno delay para o usuário ver a transição
+      // Pequeno delay para o usuário ver a transição suave
       setTimeout(() => {
         window.location.href = stripeCheckoutUrl;
       }, 800);
@@ -233,7 +242,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, planPric
                   <Loader2 size={20} className="animate-spin" />
                 ) : (
                   <span className="flex items-center justify-center gap-2">
-                    {flow === 'free' ? 'Criar Conta e Baixar' : 'Continuar para Pagamento'} <ArrowRight size={18} />
+                    {flow === 'free' ? 'Acessar Conta e Baixar' : 'Continuar para Pagamento'} <ArrowRight size={18} />
                   </span>
                 )}
               </Button>
